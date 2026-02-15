@@ -5,10 +5,11 @@ on: workflow_dispatch
 jobs:
   build_release:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
+    permissions:
+      id-token: write
+      contents: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -24,57 +25,37 @@ jobs:
         run: |
           version=$(bun -e "import('@gkd-kit/tools').then((m) => m.stdoutGkdVersion());")
           echo "version=${version}" >> "$GITHUB_OUTPUT"
+          bun -e "import('@gkd-kit/tools').then((m) => m.updatePkgVersion());"
 
-      - id: update_pkg_version
-        run: bun -e "import('@gkd-kit/tools').then((m) => m.updatePkgVersion());"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org/'
 
-      - name: Git commit
+      - name: Publish to NPM
+        run: |
+          npm publish --access public --provenance
+          bun -e "import('@gkd-kit/tools').then((m) => m.syncNpmmirror());"
+
+      - name: Git commit & Push
         id: commit
         run: |
           git config --local user.email github-actions[bot]@users.noreply.github.com
           git config --local user.name github-actions[bot]
-          git status
           git add .
-          git commit -a -m "chore: v${{steps.version.outputs.version}}"
-        continue-on-error: true
+          git commit -m "chore: v${{ steps.version.outputs.version }}"
+          # 推送代码和 Tag
+          git push origin main
+          git tag v${{ steps.version.outputs.version }}
+          git push origin v${{ steps.version.outputs.version }}
 
-      - name: Git push
-        if: ${{ steps.commit.outcome == 'success' }}
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
-          tags: true
-
-      - name: Create Release
-        id: create_release
-        if: ${{ steps.commit.outcome == 'success' }}
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.version.outputs.version }}
-          release_name: Release ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
           body_path: ./dist/CHANGELOG.md
-
-      - name: Upload Release Asset
-        id: upload-release-asset
-        if: ${{ steps.create_release.outcome == 'success' }}
-        uses: actions/upload-release-asset@v1
+          files: |
+            ./dist/ganlin_gkd.json5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/ganlin_gkd.json5
-          asset_name: ganlin_gkd_${{ steps.version.outputs.version }}.json5
-          asset_content_type: application/json
-
-      - name: Publish package
-        if: ${{ steps.commit.outcome == 'success'}}
-        env:
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          bun -e "import('@gkd-kit/tools').then((m) => m.updatePkgVersion());"
-          bun publish --access public --no-git-checks
-          bun -e "import('@gkd-kit/tools').then((m) => m.syncNpmmirror());"
-        

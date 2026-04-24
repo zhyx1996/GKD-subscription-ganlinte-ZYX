@@ -38,9 +38,9 @@ https://raw.gitmirror.com/zhyx1996/GKD-subscription-ganlinte-ZYX/main/dist/zhyx1
 
 ## 说明
 
-当前版本: v66
+当前版本: v0
 
-当前订阅文件已适配 607 个 APP, 共有 1384 规则组
+当前订阅文件已适配 608 个 APP, 共有 1388 规则组
 
 查看 [适配 APP 列表](./dist/README.md)
 
@@ -62,4 +62,4 @@ https://raw.gitmirror.com/zhyx1996/GKD-subscription-ganlinte-ZYX/main/dist/zhyx1
 
 ### 感谢以下开发者的贡献
 
-![img](https://contrib.rocks/image?repo=zhyx1996/GKD-subscription-ganlinte-ZYX&_v=66)
+![img](https://contrib.rocks/image?repo=zhyx1996/GKD-subscription-ganlinte-ZYX&_v=0)

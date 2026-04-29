@@ -50,7 +50,7 @@ export default defineGkdApp({
       rules: [
         {
           matches: '@[text="取消"] + [text="开启"]',
-          snapshotUrls: 'https://i.gkd.li/i/26185929',
+          snapshotUrls: 'https://i.gkd.li/i/27193239',
         },
       ],
     },

@@ -1,7 +1,7 @@
 {
   "name": "gkd-subscription-zhyx1996-zyx",
   "type": "module",
-  "version": "2.0.66",
+  "version": "2.0.0",
   "gkd": {
     "outDir": "dist",
     "file": "zhyx1996_gkd.json5",
